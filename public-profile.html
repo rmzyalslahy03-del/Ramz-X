@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>الملف الشخصي العام | Ramz-X</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #000;
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 70px;
+            transition: background 0.3s;
+        }
+        body.dark { background-color: #000; }
+        body.light { background-color: #f5f5f5; }
+        body.light .public-profile-container,
+        body.light .header,
+        body.light .cover-card,
+        body.light .profile-header,
+        body.light .tabs,
+        body.light .post-item {
+            background-color: #fff;
+            color: #000;
+        }
+        body.light .header h1,
+        body.light .profile-name,
+        body.light .post-title {
+            color: #000;
+        }
+        body.light .profile-bio,
+        body.light .profile-stats span,
+        body.light .post-excerpt {
+            color: #555;
+        }
+        body.light .tab {
+            color: #555;
+        }
+        body.light .tab.active {
+            color: #ff0050;
+        }
+        body.light .post-item {
+            border: 1px solid #eee;
+        }
+        .public-profile-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #000;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #000;
+            border-bottom: 0.5px solid #2c2c2c;
+        }
+        .back-btn, .dark-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .header h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .cover-card {
+            position: relative;
+            background: #000;
+            margin-bottom: 0;
+        }
+        .cover-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: linear-gradient(145deg, #3b82f6, #ff0050);
+        }
+        .avatar-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin-top: -50px;
+            z-index: 2;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid #ff0050;
+            background: #2c2c2c;
+            object-fit: cover;
+        }
+        .profile-header {
+            padding: 12px 16px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border-bottom: 0.5px solid #2c2c2c;
+        }
+        .profile-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .profile-username {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        .profile-bio {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 16px;
+            max-width: 300px;
+        }
+        .profile-stats {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin: 8px 0;
+        }
+        .profile-stats span {
+            font-size: 14px;
+            color: #aaa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-stats strong {
+            font-size: 18px;
+            color: white;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 12px 0;
+        }
+        .btn {
+            border: none;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-family: 'Cairo';
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background: #ff0050;
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #ff0050;
+            color: #ff0050;
+        }
+        .btn-outline:hover {
+            background: rgba(255, 0, 80, 0.1);
+        }
+        .social-links {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 12px 0 6px;
+        }
+        .social-links a {
+            color: #aaa;
+            font-size: 20px;
+            transition: 0.2s;
+        }
+        .social-links a:hover {
+            color: #ff0050;
+        }
+        .unique-url {
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 0.5px solid #2c2c2c;
+            background: #000;
+            overflow-x: auto;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+        .tab.active {
+            color: white;
+            border-bottom-color: #ff0050;
+        }
+        .tab .count-badge {
+            background: #ff0050;
+            color: white;
+            border-radius: 30px;
+            padding: 0px 6px;
+            font-size: 10px;
+            margin-right: 5px;
+        }
+        .content-area {
+            padding: 16px;
+        }
+        .posts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .post-item {
+            background: #111;
+            border-radius: 16px;
+            padding: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #2c2c2c;
+        }
+        .post-item:hover {
+            transform: translateY(-2px);
+            border-color: #ff0050;
+        }
+        .post-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            background: #2c2c2c;
+        }
+        .post-title {
+            font-weight: bold;
+            color: white;
+            margin-bottom: 4px;
+            font-size: 1rem;
+        }
+        .post-excerpt {
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+        }
+        .post-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 11px;
+            color: #777;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        .bottom-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid #ddd;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 30;
+        }
+        body.dark .bottom-footer {
+            background-color: #111;
+            border-top-color: #2c2c2c;
+        }
+        .footer-button {
+            background: none;
+            border: none;
+            text-align: center;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.2s;
+            color: #333;
+        }
+        body.dark .footer-button {
+            color: #aaa;
+        }
+        .footer-button:hover {
+            color: #ff0050;
+            transform: scale(1.05);
+        }
+        .icon {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .label {
+            font-size: 11px;
+            color: #333;
+        }
+        body.dark .label {
+            color: #aaa;
+        }
+        #globalToast {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: #1f1f1f;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 40px;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            font-size: 14px;
+            border-left: 4px solid #fe2c55;
+        }
+        body.light #globalToast {
+            background: #333;
+        }
+        @media (max-width: 640px) {
+            .cover-img { height: 120px; }
+            .profile-avatar { width: 80px; height: 80px; margin-top: -40px; }
+            .profile-name { font-size: 18px; }
+            .tab { font-size: 11px; padding: 10px 4px; }
+        }
+    </style>
+</head>
+<body>
+<div class="public-profile-container">
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-right"></i></button>
+        <h1>الملف الشخصي</h1>
+        <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-moon"></i></button>
+    </div>
+
+    <div class="cover-card">
+        <img class="cover-img" id="coverImg" src="https://picsum.photos/id/104/800/300" alt="cover">
+        <div class="avatar-wrapper">
+            <img class="profile-avatar" id="avatarImg" src="https://randomuser.me/api/portraits/women/68.jpg" alt="avatar">
+        </div>
+    </div>
+
+    <div id="profileHeader" class="profile-header"></div>
+
+    <div class="tabs" id="profileTabs"></div>
+
+    <div id="profileContent" class="content-area"></div>
+</div>
+
+<div class="bottom-footer">
+    <button onclick="window.location.href='home.html'" class="footer-button"><i class="fas fa-home icon"></i><div class="label">الرئيسية</div></button>
+    <button onclick="window.location.href='explore.html'" class="footer-button"><i class="fas fa-compass icon"></i><div class="label">استكشاف</div></button>
+    <button onclick="window.location.href='create-post.html'" class="footer-button"><i class="fas fa-plus-circle icon"></i><div class="label">إنشاء</div></button>
+    <button onclick="window.location.href='inbox.html'" class="footer-button"><i class="fas fa-inbox icon"></i><div class="label">صندوق الوارد</div></button>
+    <button onclick="window.location.href='profile.html'" class="footer-button"><i class="fas fa-user icon"></i><div class="label">ملفي</div></button>
+</div>
+
+<div id="globalToast"></div>
+
+<script>
+    // ---------------------- Toast ----------------------
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('globalToast');
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        toast.style.backgroundColor = isError ? '#3a1e1e' : '#1f1f1f';
+        toast.style.borderLeftColor = isError ? '#ff4444' : '#fe2c55';
+        setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+    }
+
+    // ---------------------- المستخدم الحالي والمستهدف ----------------------
+    let currentUser = "سارة أحمد";
+    let viewedUser = new URLSearchParams(window.location.search).get('user') || currentUser;
+
+    // ---------------------- بيانات localStorage ----------------------
+    function getUsers() { return JSON.parse(localStorage.getItem('users')) || {}; }
+    function saveUsers(users) { localStorage.setItem('users', JSON.stringify(users)); }
+    function getPosts() { return JSON.parse(localStorage.getItem('posts')) || []; }
+    function getUserFavorites() { return JSON.parse(localStorage.getItem('userFavorites')) || {}; }
+    function getFollowStatus() { return JSON.parse(localStorage.getItem('followStatus')) || {}; }
+    function saveFollowStatus(follow) { localStorage.setItem('followStatus', JSON.stringify(follow)); }
+    function getLikesDB() { return JSON.parse(localStorage.getItem('likesDB')) || {}; }
+
+    // تهيئة البيانات التجريبية إذا لم توجد (نفس باقي الصفحات)
+    if (!localStorage.getItem('users')) {
+        const initialUsers = {
+            "سارة أحمد": { avatar: "https://randomuser.me/api/portraits/women/68.jpg", bio: "كاتبة ومحررة 📝", followers: 120, following: 85, totalLikes: 340, social: { email: "sara@example.com", facebook: "sara_fb", twitter: "@sara", instagram: "sara_insta", tiktok: "sara_tiktok", youtube: "sara_yt" }, uniqueName: "sara_ahmed", cover: "https://picsum.photos/id/104/800/300" },
+            "محمد الكاتب": { avatar: "https://randomuser.me/api/portraits/men/32.jpg", bio: "كاتب محتوى تقني", followers: 200, following: 45, totalLikes: 512, social: { email: "mohamed@ex.com", twitter: "@mohamed", instagram: "mohamed_writer" }, uniqueName: "mohamed_katib", cover: "https://picsum.photos/id/20/800/300" },
+            "رحالة": { avatar: "https://randomuser.me/api/portraits/men/45.jpg", bio: "مسافر ومصور", followers: 340, following: 120, totalLikes: 890, social: { instagram: "traveler", youtube: "traveler_vlog" }, uniqueName: "rahhala", cover: "https://picsum.photos/id/29/800/300" }
+        };
+        localStorage.setItem('users', JSON.stringify(initialUsers));
+    }
+    if (!localStorage.getItem('posts')) {
+        const samplePosts = [
+            { id: 1, title: "جمال الطبيعة في الخريف", content: "أوراق ذهبية وهواء عليل...", image: "https://picsum.photos/id/104/800/600", author: "سارة أحمد", date: new Date().toISOString(), likes: 124, commentsCount: 18, views: 3400, type: "image", category: "طبيعة", hidden: false },
+            { id: 2, title: "نصائح لكتابة مقالات احترافية", content: "الكتابة موهبة تحتاج تمرين...", image: "https://picsum.photos/id/0/800/600", author: "سارة أحمد", date: new Date().toISOString(), likes: 89, commentsCount: 7, views: 1200, type: "article", category: "تعليم", hidden: false },
+            { id: 3, title: "مستقبل الذكاء الاصطناعي", content: "تحليل كيف يغير الذكاء الاصطناعي صناعة المحتوى", image: "https://picsum.photos/id/96/400/260", author: "محمد الكاتب", date: new Date().toISOString(), likes: 312, commentsCount: 38, views: 6700, type: "article", category: "تقنية", hidden: false },
+            { id: 4, title: "غروب الشمس فوق الجبال", content: "لقطة مذهلة لجبال الألب بألوان ذهبية", image: "https://picsum.photos/id/104/400/260", author: "سارة أحمد", date: new Date().toISOString(), likes: 342, commentsCount: 27, views: 8900, type: "image", category: "طبيعة", hidden: false },
+            { id: 5, title: "مبادئ التصميم الجرافيكي", content: "تعلم أساسيات التصميم", image: "https://picsum.photos/id/20/400/260", author: "محمد الكاتب", date: new Date().toISOString(), likes: 210, commentsCount: 15, views: 4500, type: "article", category: "تصميم", hidden: false }
+        ];
+        localStorage.setItem('posts', JSON.stringify(samplePosts));
+        let likesDB = {};
+        samplePosts.forEach(p => { likesDB[p.id] = { liked: false, count: p.likes }; });
+        localStorage.setItem('likesDB', JSON.stringify(likesDB));
+    }
+    if (!localStorage.getItem('userFavorites')) {
+        localStorage.setItem('userFavorites', JSON.stringify({ "سارة أحمد": [1,4], "محمد الكاتب": [3], "رحالة": [] }));
+    }
+    if (!localStorage.getItem('followStatus')) {
+        localStorage.setItem('followStatus', JSON.stringify({ "سارة أحمد": ["محمد الكاتب"], "محمد الكاتب": [], "رحالة": ["سارة أحمد"] }));
+    }
+
+    // ---------------------- دوال مساعدة ----------------------
+    function formatNumber(num) {
+        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+    }
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    function updateUserTotalLikes(username) {
+        let posts = getPosts();
+        let likesDB = getLikesDB();
+        let total = 0;
+        posts.forEach(p => {
+            if (p.author === username && !p.hidden) total += (likesDB[p.id]?.count || p.likes || 0);
+        });
+        let users = getUsers();
+        if (users[username]) {
+            users[username].totalLikes = total;
+            saveUsers(users);
+        }
+        return total;
+    }
+
+    // عرض الملف الشخصي العام
+    function renderProfile() {
+        let users = getUsers();
+        let user = users[viewedUser];
+        if (!user) {
+            document.getElementById('profileHeader').innerHTML = '<div style="color:red; text-align:center;">المستخدم غير موجود</div>';
+            return;
+        }
+        // تحديث الغلاف والصورة
+        document.getElementById('coverImg').src = user.cover || "https://picsum.photos/id/104/800/300";
+        document.getElementById('avatarImg').src = user.avatar;
+        
+        let totalLikes = updateUserTotalLikes(viewedUser);
+        let followStatus = getFollowStatus();
+        let isFollowing = (followStatus[currentUser] || []).includes(viewedUser);
+        let isOwnProfile = (viewedUser === currentUser);
+
+        // روابط التواصل
+        let socialHtml = '';
+        if (user.social) {
+            for (let [platform, value] of Object.entries(user.social)) {
+                let icon = '';
+                if (platform === 'email') icon = 'fas fa-envelope';
+                else if (platform === 'facebook') icon = 'fab fa-facebook';
+                else if (platform === 'twitter') icon = 'fab fa-twitter';
+                else if (platform === 'instagram') icon = 'fab fa-instagram';
+                else if (platform === 'tiktok') icon = 'fab fa-tiktok';
+                else if (platform === 'youtube') icon = 'fab fa-youtube';
+                else icon = 'fas fa-link';
+                socialHtml += `<a href="#" onclick="showToast('رابط ${platform}: ${value}')"><i class="${icon}"></i></a>`;
+            }
+        }
+
+        let headerHtml = `
+            <div class="profile-name">${escapeHtml(viewedUser)} <i class="fas fa-check-circle verified-badge" style="color:#3b82f6;"></i></div>
+            <div class="profile-username">@${user.uniqueName || viewedUser}</div>
+            <div class="profile-bio">${escapeHtml(user.bio || '')}</div>
+            <div class="profile-stats">
+                <span><strong>${formatNumber(user.followers || 0)}</strong> متابع</span>
+                <span><strong>${formatNumber(user.following || 0)}</strong> متبعهم</span>
+                <span><strong>${formatNumber(totalLikes)}</strong> إعجاب</span>
+            </div>
+            <div class="action-buttons">
+                ${!isOwnProfile ? `<button class="btn btn-primary" id="followActionBtn">${isFollowing ? 'إلغاء المتابعة' : 'متابعة'}</button>` : ''}
+                <button class="btn btn-outline" id="messageBtn"><i class="far fa-comment"></i> رسالة</button>
+            </div>
+            <div class="social-links">${socialHtml}</div>
+            <div class="unique-url">🔗 الرابط الفريد: /user/${user.uniqueName || viewedUser}</div>
+        `;
+        document.getElementById('profileHeader').innerHTML = headerHtml;
+
+        // ربط زر المتابعة
+        let followBtn = document.getElementById('followActionBtn');
+        if (followBtn && !isOwnProfile) {
+            followBtn.onclick = () => {
+                let follow = getFollowStatus();
+                let list = follow[currentUser] || [];
+                if (list.includes(viewedUser)) {
+                    list = list.filter(f => f !== viewedUser);
+                    followBtn.innerText = 'متابعة';
+                    showToast(`✅ تم إلغاء متابعة ${viewedUser}`);
+                } else {
+                    list.push(viewedUser);
+                    followBtn.innerText = 'إلغاء المتابعة';
+                    showToast(`✅ تمت متابعة ${viewedUser}`);
+                }
+                follow[currentUser] = list;
+                saveFollowStatus(follow);
+                // تحديث عدد المتابعين في الواجهة
+                let usersObj = getUsers();
+                let newFollowersCount = list.includes(viewedUser) ? (user.followers + 1) : (user.followers - 1);
+                user.followers = newFollowersCount;
+                usersObj[viewedUser] = user;
+                saveUsers(usersObj);
+                renderProfile(); // إعادة تحميل لعرض العدد المحدث
+                // تحديث التغذية في home.html (يتم عند الرجوع)
+            };
+        }
+        // زر الرسالة
+        document.getElementById('messageBtn')?.addEventListener('click', () => {
+            window.location.href = `inbox.html?user=${viewedUser}`;
+        });
+    }
+
+    // حساب الإحصائيات للتبويبات
+    function getCounts() {
+        let posts = getPosts();
+        let userPosts = posts.filter(p => p.author === viewedUser && !p.hidden);
+        let articles = userPosts.filter(p => p.type === 'article');
+        let photos = userPosts.filter(p => p.type === 'image');
+        let favorites = getUserFavorites()[viewedUser] || [];
+        let favPostsCount = posts.filter(p => favorites.includes(p.id) && !p.hidden).length;
+        return {
+            posts: userPosts.length,
+            articles: articles.length,
+            photos: photos.length,
+            favorites: favPostsCount
+        };
+    }
+
+    // إنشاء التبويبات ديناميكياً مع الأعداد
+    function renderTabs() {
+        let counts = getCounts();
+        let tabsContainer = document.getElementById('profileTabs');
+        tabsContainer.innerHTML = `
+            <button class="tab active" data-tab="posts">📄 المنشورات <span class="count-badge">${counts.posts}</span></button>
+            <button class="tab" data-tab="articles">📝 مقالات <span class="count-badge">${counts.articles}</span></button>
+            <button class="tab" data-tab="photos">🖼️ صور <span class="count-badge">${counts.photos}</span></button>
+            <button class="tab" data-tab="favorites">❤️ مفضلات <span class="count-badge">${counts.favorites}</span></button>
+        `;
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => setTab(tab.dataset.tab));
+        });
+    }
+
+    // عرض المحتوى حسب التبويب
+    let currentTab = 'posts';
+    function renderContent() {
+        let posts = getPosts();
+        let favorites = getUserFavorites()[viewedUser] || [];
+        let container = document.getElementById('profileContent');
+        let filtered = [];
+        
+        if (currentTab === 'posts') {
+            filtered = posts.filter(p => p.author === viewedUser && !p.hidden);
+        } else if (currentTab === 'articles') {
+            filtered = posts.filter(p => p.author === viewedUser && !p.hidden && p.type === 'article');
+        } else if (currentTab === 'photos') {
+            filtered = posts.filter(p => p.author === viewedUser && !p.hidden && p.type === 'image');
+        } else if (currentTab === 'favorites') {
+            filtered = posts.filter(p => favorites.includes(p.id) && !p.hidden);
+        }
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="far fa-newspaper"></i><p>لا توجد منشورات</p></div>';
+            return;
+        }
+        
+        let html = '<div class="posts-grid">';
+        filtered.forEach(p => {
+            let shortContent = p.content.length > 100 ? p.content.substring(0, 100) + '...' : p.content;
+            html += `
+                <div class="post-item" data-post-id="${p.id}">
+                    ${p.image ? `<img class="post-img" src="${p.image}" loading="lazy" onerror="this.src='https://via.placeholder.com/300'">` : ''}
+                    <div class="post-title">${escapeHtml(p.title)} <span style="font-size:10px; background:#2c2c2c; padding:2px 8px; border-radius:20px;">${p.category || 'عام'}</span></div>
+                    <div class="post-excerpt">${escapeHtml(shortContent)}</div>
+                    <div class="post-meta">
+                        <span><i class="fas fa-heart"></i> ${formatNumber(p.likes)}</span>
+                        <span><i class="fas fa-comment"></i> ${p.commentsCount || 0}</span>
+                        <span><i class="fas fa-eye"></i> ${formatNumber(p.views || 0)}</span>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+        document.querySelectorAll('.post-item').forEach(el => {
+            el.addEventListener('click', () => window.location.href = `home.html?post=${el.dataset.postId}`);
+        });
+    }
+
+    function setTab(tabId) {
+        currentTab = tabId;
+        document.querySelectorAll('.tab').forEach(tab => {
+            if (tab.dataset.tab === tabId) tab.classList.add('active');
+            else tab.classList.remove('active');
+        });
+        renderContent();
+    }
+
+    // ---------------------- الوضع الليلي/الفاتح ----------------------
+    function applyTheme() {
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            document.body.classList.remove('light');
+        } else {
+            document.body.classList.add('light');
+            document.body.classList.remove('dark');
+        }
+    }
+    document.getElementById('darkModeToggle').addEventListener('click', () => {
+        localStorage.setItem('darkMode', !document.body.classList.contains('dark'));
+        applyTheme();
+    });
+    applyTheme();
+
+    // بدء التشغيل
+    renderProfile();
+    renderTabs();
+    setTab('posts');
+</script>
+</body>
+</html>

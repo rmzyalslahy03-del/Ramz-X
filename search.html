@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>بحث | Ramz-X</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: #000;
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            padding-bottom: 70px;
+            transition: background 0.3s;
+        }
+        body.dark { background-color: #000; }
+        body.light { background-color: #f5f5f5; }
+        body.light .search-container,
+        body.light .header,
+        body.light .main-tabs,
+        body.light .search-card,
+        body.light .search-box {
+            background-color: #fff;
+            color: #000;
+        }
+        body.light .header h1 { color: #000; }
+        body.light .main-tab { color: #555; }
+        body.light .main-tab.active { color: #ff0050; }
+        body.light .search-card { border-bottom-color: #e0e0e0; }
+        body.light .card-description,
+        body.light .card-stats { color: #555; }
+        body.light .search-box input { color: #000; }
+        body.light .search-box input::placeholder { color: #888; }
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #000;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #000;
+            border-bottom: 0.5px solid #2c2c2c;
+        }
+        .back-btn, .dark-toggle { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .header h1 { color: white; font-size: 20px; font-weight: bold; }
+        .search-bar {
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            background: #000;
+            border-bottom: 0.5px solid #2c2c2c;
+        }
+        .search-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #111;
+            border-radius: 2rem;
+            padding: 8px 16px;
+            gap: 8px;
+        }
+        .search-box i { color: #aaa; font-size: 18px; }
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 16px;
+            font-family: 'Cairo', sans-serif;
+        }
+        .search-box input::placeholder { color: #777; }
+        .search-btn {
+            background: #ff0050;
+            border: none;
+            padding: 0 20px;
+            border-radius: 2rem;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        .main-tabs {
+            display: flex;
+            border-bottom: 0.5px solid #2c2c2c;
+            background: #000;
+        }
+        .main-tab {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: 0.2s;
+        }
+        .main-tab.active { color: white; border-bottom-color: #ff0050; }
+        .results-area { padding: 16px; }
+        .search-card {
+            background: #111;
+            border-radius: 1rem;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #2c2c2c;
+        }
+        .search-card:hover { transform: translateY(-2px); border-color: #ff0050; }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 6px;
+        }
+        .card-description {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        .card-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 0.7rem;
+            color: #777;
+        }
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2c2c2c;
+            margin-left: 12px;
+        }
+        .flex-row { display: flex; align-items: center; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .like-btn {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .bottom-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid #ddd;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            z-index: 30;
+        }
+        body.dark .bottom-footer { background-color: #111; border-top-color: #2c2c2c; }
+        .footer-button {
+            background: none;
+            border: none;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #333;
+            text-decoration: none;
+        }
+        body.dark .footer-button { color: #aaa; }
+        .footer-button:hover { color: #ff0050; transform: scale(1.05); }
+        .icon { font-size: 22px; display: block; margin-bottom: 4px; }
+        .label { font-size: 11px; color: #333; }
+        body.dark .label { color: #aaa; }
+        #globalToast {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: #1f1f1f;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 40px;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            font-size: 14px;
+            border-left: 4px solid #fe2c55;
+        }
+        @media (max-width: 640px) {
+            .action-btn span:not(.count) { display: none; }
+        }
+    </style>
+</head>
+<body>
+<div class="search-container">
+    <div class="header">
+        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-right"></i></button>
+        <h1>البحث</h1>
+        <button class="dark-toggle" id="darkModeToggle"><i class="fas fa-moon"></i></button>
+    </div>
+
+    <div class="search-bar">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن منشورات، حسابات، هاشتاجات...">
+        </div>
+        <button class="search-btn" id="searchBtn">بحث</button>
+    </div>
+
+    <div class="main-tabs" id="mainTabs">
+        <button class="main-tab active" data-tab="posts">المنشورات</button>
+        <button class="main-tab" data-tab="users">الحسابات</button>
+        <button class="main-tab" data-tab="hashtags">الهاشتاجات</button>
+    </div>
+
+    <div id="resultsArea" class="results-area"></div>
+</div>
+
+<div class="bottom-footer">
+    <a href="home.html" class="footer-button"><i class="fas fa-home icon"></i><div class="label">الرئيسية</div></a>
+    <a href="explore.html" class="footer-button"><i class="fas fa-compass icon"></i><div class="label">استكشاف</div></a>
+    <a href="create-post.html" class="footer-button"><i class="fas fa-plus-circle icon"></i><div class="label">إنشاء</div></a>
+    <a href="inbox.html" class="footer-button"><i class="fas fa-inbox icon"></i><div class="label">صندوق الوارد</div></a>
+    <a href="profile.html" class="footer-button"><i class="fas fa-user icon"></i><div class="label">الملف الشخصي</div></a>
+</div>
+
+<div id="globalToast"></div>
+
+<script>
+    // ---------------------- Supabase Config ----------------------
+    const SUPABASE_URL = "https://zlkpoghjbqtnhzhmmdbw.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_7evDsA5aEgPMsRBTFjntrg_XZQFmNLw";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let currentTab = 'posts';
+    let currentQuery = '';
+
+    // ---------------------- Toast ----------------------
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('globalToast');
+        toast.textContent = message;
+        toast.style.opacity = '1';
+        toast.style.backgroundColor = isError ? '#3a1e1e' : '#1f1f1f';
+        toast.style.borderLeftColor = isError ? '#ff4444' : '#fe2c55';
+        setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+    }
+
+    // ---------------------- Helper Functions ----------------------
+    function formatNumber(num) {
+        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+    }
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    // ---------------------- تهيئة البيانات (إنشاء الجداول إذا لزم الأمر) ----------------------
+    async function initTables() {
+        // ملاحظة: إنشاء الجداول يتطلب صلاحيات admin، لكننا سنفترض وجودها مسبقاً.
+        // نقوم فقط بجلب بيانات أولية إن لم توجد.
+        const { count: postsCount } = await supabase.from('posts').select('*', { count: 'exact', head: true });
+        if (postsCount === 0) {
+            // إدخال بيانات تجريبية
+            const samplePosts = [
+                { title: "جمال الطبيعة في الخريف", content: "أوراق ذهبية وهواء عليل...", image: "https://picsum.photos/id/104/800/600", author: "سارة أحمد", likes: 124, comments_count: 18, views: 3400, reposts: 5, hashtag: "طبيعة_خريف", category: "طبيعة", hidden: false, created_at: new Date() },
+                { title: "نصائح لكتابة مقالات", content: "الكتابة موهبة تحتاج تمرين...", image: "https://picsum.photos/id/0/800/600", author: "محمد الكاتب", likes: 89, comments_count: 7, views: 1200, reposts: 2, hashtag: "كتابة_إبداعية", category: "تعليم", hidden: false, created_at: new Date() }
+            ];
+            for (let p of samplePosts) {
+                await supabase.from('posts').insert(p);
+            }
+        }
+        const { count: usersCount } = await supabase.from('users').select('*', { count: 'exact', head: true });
+        if (usersCount === 0) {
+            const sampleUsers = [
+                { username: "سارة أحمد", avatar: "https://randomuser.me/api/portraits/women/68.jpg", bio: "كاتبة ومحررة", followers: 120, following: 85, unique_name: "sara_ahmed" },
+                { username: "محمد الكاتب", avatar: "https://randomuser.me/api/portraits/men/32.jpg", bio: "كاتب تقني", followers: 200, following: 45, unique_name: "mohamed_katib" }
+            ];
+            for (let u of sampleUsers) {
+                await supabase.from('users').insert(u);
+            }
+        }
+    }
+
+    // ---------------------- البحث ----------------------
+    async function performSearch() {
+        const query = document.getElementById('searchInput').value.trim();
+        currentQuery = query;
+        if (!query) {
+            document.getElementById('resultsArea').innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>أدخل كلمة البحث</p></div>';
+            return;
+        }
+
+        if (currentTab === 'posts') {
+            // بحث في المنشورات
+            const { data: posts, error } = await supabase
+                .from('posts')
+                .select('*')
+                .or(`title.ilike.%${query}%,content.ilike.%${query}%,hashtag.ilike.%${query}%,author.ilike.%${query}%`)
+                .eq('hidden', false);
+            if (error) {
+                showToast(error.message, true);
+                return;
+            }
+            // جلب الإعجابات الخاصة بالمستخدم الحالي
+            let userLikes = {};
+            if (currentUser) {
+                const { data: likes } = await supabase.from('likes').select('post_id').eq('user_id', currentUser.id);
+                if (likes) likes.forEach(l => userLikes[l.post_id] = true);
+            }
+            renderPostsResults(posts || [], userLikes);
+        } 
+        else if (currentTab === 'users') {
+            const { data: users, error } = await supabase
+                .from('users')
+                .select('*')
+                .or(`username.ilike.%${query}%,unique_name.ilike.%${query}%,bio.ilike.%${query}%`);
+            if (error) {
+                showToast(error.message, true);
+                return;
+            }
+            renderUsersResults(users || []);
+        }
+        else if (currentTab === 'hashtags') {
+            // استعلام للحصول على هاشتاجات فريدة من المنشورات
+            const { data: posts, error } = await supabase
+                .from('posts')
+                .select('hashtag')
+                .ilike('hashtag', `%${query}%`)
+                .not('hashtag', 'is', null);
+            if (error) {
+                showToast(error.message, true);
+                return;
+            }
+            const hashtagsSet = new Set(posts.map(p => p.hashtag).filter(t => t));
+            renderHashtagsResults(Array.from(hashtagsSet));
+        }
+    }
+
+    function renderPostsResults(posts, userLikes) {
+        const container = document.getElementById('resultsArea');
+        if (!posts.length) {
+            container.innerHTML = '<div class="empty-state"><i class="far fa-newspaper"></i><p>لا توجد منشورات مطابقة</p></div>';
+            return;
+        }
+        let html = '';
+        for (let p of posts) {
+            const liked = userLikes[p.id] || false;
+            const heartClass = liked ? 'fas fa-heart' : 'far fa-heart';
+            const heartColor = liked ? 'color:#ff0050;' : '';
+            html += `
+                <div class="search-card" data-post-id="${p.id}">
+                    <div class="card-title">${escapeHtml(p.title)} <span style="font-size:10px; background:#2c2c2c; padding:2px 8px; border-radius:20px;">${p.category || 'عام'}</span></div>
+                    <div class="card-description">${escapeHtml(p.content.substring(0, 120))}...</div>
+                    <div class="card-stats">
+                        <span><i class="fas fa-user"></i> ${escapeHtml(p.author)}</span>
+                        <span class="like-btn interactive-like" data-id="${p.id}" data-liked="${liked}">
+                            <i class="${heartClass}" style="${heartColor}"></i> <span class="likes-count">${formatNumber(p.likes)}</span>
+                        </span>
+                        <span><i class="far fa-comment"></i> ${p.comments_count || 0}</span>
+                        <span><i class="fas fa-eye"></i> ${formatNumber(p.views || 0)}</span>
+                    </div>
+                    ${p.hashtag ? `<div style="color:#ff0050; font-size:11px; margin-top:6px;">#${escapeHtml(p.hashtag)}</div>` : ''}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        attachLikeEvents();
+        attachPostClickEvents();
+    }
+
+    function renderUsersResults(users) {
+        const container = document.getElementById('resultsArea');
+        if (!users.length) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>لا توجد حسابات مطابقة</p></div>';
+            return;
+        }
+        let html = '';
+        for (let u of users) {
+            html += `
+                <div class="search-card" data-username="${u.username}">
+                    <div class="flex-row">
+                        <img src="${u.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg'}" class="user-avatar-small" onerror="this.src='https://randomuser.me/api/portraits/lego/1.jpg'">
+                        <div style="flex:1">
+                            <div class="card-title">${escapeHtml(u.username)}</div>
+                            <div class="card-description">@${u.unique_name || u.username} • ${u.bio ? escapeHtml(u.bio.substring(0, 80)) : ''}</div>
+                            <div class="card-stats">
+                                <span><i class="fas fa-user-friends"></i> ${u.followers || 0} متابع</span>
+                                <span><i class="fas fa-heart"></i> ${u.total_likes || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        attachUserClickEvents();
+    }
+
+    function renderHashtagsResults(hashtags) {
+        const container = document.getElementById('resultsArea');
+        if (!hashtags.length) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-hashtag"></i><p>لا توجد هاشتاجات مطابقة</p></div>';
+            return;
+        }
+        let html = '';
+        for (let tag of hashtags) {
+            html += `
+                <div class="search-card" data-hashtag="${escapeHtml(tag)}">
+                    <div class="card-title"><i class="fas fa-hashtag" style="margin-left:4px;"></i> ${escapeHtml(tag)}</div>
+                    <div class="card-description">منشورات تحمل هذا الهاشتاج</div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        attachHashtagClickEvents();
+    }
+
+    // ---------------------- أحداث النقر ----------------------
+    function attachPostClickEvents() {
+        document.querySelectorAll('.search-card[data-post-id]').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('.like-btn')) return;
+                const postId = card.dataset.postId;
+                window.location.href = `home.html?post=${postId}`;
+            });
+        });
+    }
+    function attachUserClickEvents() {
+        document.querySelectorAll('.search-card[data-username]').forEach(card => {
+            card.addEventListener('click', () => {
+                const username = card.dataset.username;
+                window.location.href = `public-profile.html?user=${username}`;
+            });
+        });
+    }
+    function attachHashtagClickEvents() {
+        document.querySelectorAll('.search-card[data-hashtag]').forEach(card => {
+            card.addEventListener('click', () => {
+                const hashtag = card.dataset.hashtag;
+                document.getElementById('searchInput').value = hashtag;
+                performSearch();
+            });
+        });
+    }
+
+    // ---------------------- الإعجاب ----------------------
+    async function handleLikeClick(event) {
+        event.stopPropagation();
+        const btn = event.currentTarget;
+        const postId = parseInt(btn.dataset.id);
+        const currentlyLiked = btn.dataset.liked === 'true';
+        if (!currentUser) {
+            showToast('يجب تسجيل الدخول أولاً', true);
+            return;
+        }
+        if (!currentlyLiked) {
+            // إضافة إعجاب
+            const { error } = await supabase.from('likes').insert({ user_id: currentUser.id, post_id: postId });
+            if (error) { showToast(error.message, true); return; }
+            // تحديث عدد الإعجابات في جدول posts
+            await supabase.rpc('increment_likes', { row_id: postId });
+            btn.dataset.liked = 'true';
+            const icon = btn.querySelector('i');
+            icon.className = 'fas fa-heart';
+            icon.style.color = '#ff0050';
+            const countSpan = btn.querySelector('.likes-count');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = formatNumber(currentCount + 1);
+            showToast('👍 تم الإعجاب');
+        } else {
+            // إلغاء الإعجاب
+            const { error } = await supabase.from('likes').delete().match({ user_id: currentUser.id, post_id: postId });
+            if (error) { showToast(error.message, true); return; }
+            await supabase.rpc('decrement_likes', { row_id: postId });
+            btn.dataset.liked = 'false';
+            const icon = btn.querySelector('i');
+            icon.className = 'far fa-heart';
+            icon.style.color = '';
+            const countSpan = btn.querySelector('.likes-count');
+            let currentCount = parseInt(countSpan.innerText);
+            countSpan.innerText = formatNumber(currentCount - 1);
+            showToast('👎 تم إلغاء الإعجاب');
+        }
+        // تحديث المنشور محلياً (اختياري)
+    }
+
+    function attachLikeEvents() {
+        const likeButtons = document.querySelectorAll('.interactive-like');
+        likeButtons.forEach(btn => {
+            btn.removeEventListener('click', handleLikeClick);
+            btn.addEventListener('click', handleLikeClick);
+        });
+    }
+
+    // ---------------------- تبديل التبويبات ----------------------
+    function initTabs() {
+        const tabs = document.querySelectorAll('.main-tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentTab = tab.dataset.tab;
+                if (currentQuery) performSearch();
+                else document.getElementById('resultsArea').innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>أدخل كلمة البحث</p></div>';
+            });
+        });
+    }
+
+    // ---------------------- تحميل المستخدم الحالي ----------------------
+    async function loadCurrentUser() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            currentUser = { id: user.id, email: user.email };
+        } else {
+            // مستخدم ضيف
+            currentUser = null;
+        }
+    }
+
+    // ---------------------- البحث والوضع الليلي ----------------------
+    document.getElementById('searchBtn').addEventListener('click', performSearch);
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+    });
+
+    function applyTheme(theme) {
+        if (theme === 'light') {
+            document.body.classList.remove('dark');
+            document.body.classList.add('light');
+        } else {
+            document.body.classList.remove('light');
+            document.body.classList.add('dark');
+        }
+        localStorage.setItem('searchTheme', theme);
+    }
+    function initTheme() {
+        const saved = localStorage.getItem('searchTheme') || 'dark';
+        applyTheme(saved);
+        const toggleBtn = document.getElementById('darkModeToggle');
+        toggleBtn.innerHTML = saved === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    }
+    document.getElementById('darkModeToggle').addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        const newTheme = isDark ? 'light' : 'dark';
+        applyTheme(newTheme);
+        const toggleBtn = document.getElementById('darkModeToggle');
+        toggleBtn.innerHTML = newTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    });
+
+    // ---------------------- بدء التشغيل ----------------------
+    (async () => {
+        await initTables();
+        await loadCurrentUser();
+        initTheme();
+        initTabs();
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q');
+        if (q) {
+            document.getElementById('searchInput').value = q;
+            performSearch();
+        }
+    })();
+</script>
+</body>
+</html>
