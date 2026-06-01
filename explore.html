@@ -4,623 +4,257 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
     <title>استكشاف | Ramz-X</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="common.js"></script>
     <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-card: #111111;
+            --bg-input: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --text-muted: #777777;
+            --accent: #ff0050;
+            --accent-blue: #3b82f6;
+            --border: #2c2c2c;
+            --radius: 1rem;
+        }
+        body.light {
+            --bg-primary: #f5f5f5;
+            --bg-card: #ffffff;
+            --bg-input: #e8e8e8;
+            --text-primary: #111111;
+            --text-secondary: #444444;
+            --text-muted: #666666;
+            --border: #e0e0e0;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: #000;
+            background: var(--bg-primary);
             font-family: 'Cairo', sans-serif;
             min-height: 100vh;
             padding-bottom: 70px;
-            transition: background 0.3s;
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
         }
-        body.dark { background-color: #000; }
-        body.light { background-color: #f5f5f5; }
-        body.light .explore-container,
-        body.light .header,
-        body.light .main-tabs,
-        body.light .search-filter-section,
-        body.light .explore-card {
-            background-color: #fff;
-            color: #000;
+        .header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-primary); border-bottom: 1px solid var(--border); }
+        .header h2 { flex: 1; font-size: 18px; }
+        .icon-btn { background: none; border: none; color: var(--text-primary); font-size: 20px; cursor: pointer; padding: 8px; border-radius: 50%; }
+
+        .tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .tab {
+            flex: 1; text-align: center; padding: 12px; cursor: pointer;
+            color: var(--text-secondary); border-bottom: 2px solid transparent;
+            font-weight: 600; font-size: 14px; transition: 0.2s;
         }
-        body.light .header h1 { color: #000; }
-        body.light .main-tab { color: #555; }
-        body.light .main-tab.active { color: #ff0050; }
-        body.light .list-item { border-bottom-color: #e0e0e0; }
-        body.light .item-detail,
-        body.light .item-time,
-        body.light .card-description,
-        body.light .card-stats { color: #555; }
-        body.light .card-category { background: #eef2ff; color: #2563eb; }
-        body.light .search-box { background: #f1f5f9; }
-        body.light .filter-btn { background: #f1f5f9; color: #334155; }
-        body.light .filter-btn.active { background: #3b82f6; color: white; }
-        .explore-container {
-            max-width: 1280px;
-            margin: 0 auto;
-            background: #000;
-            min-height: 100vh;
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .content { max-width: 600px; margin: 0 auto; padding: 8px; }
+        .post-card {
+            background: var(--bg-card); border-radius: var(--radius);
+            margin-bottom: 16px; overflow: hidden; border: 1px solid var(--border);
+            cursor: pointer; transition: background 0.2s;
         }
-        .header {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            background: #000;
-            border-bottom: 0.5px solid #2c2c2c;
+        .post-card:hover { background: var(--bg-input); }
+        .post-image { width: 100%; max-height: 400px; object-fit: cover; display: block; background: var(--bg-input); }
+        .post-content { padding: 12px; }
+        .post-title { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+        .post-text { color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+        .post-date { font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+        .post-stats { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; color: var(--text-muted); }
+        .post-stats span { display: flex; align-items: center; gap: 4px; }
+
+        .user-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px;
+            background: var(--bg-card); border-radius: 12px; margin-bottom: 8px;
+            cursor: pointer; border: 1px solid var(--border); transition: background 0.2s;
         }
-        .back-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            margin-left: 12px;
+        .user-item:hover { background: var(--bg-input); }
+        .user-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--bg-input); }
+        .user-info { flex: 1; }
+        .user-name { font-weight: 700; }
+        .user-username { font-size: 12px; color: var(--text-muted); }
+
+        .category-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+        .chip {
+            background: var(--bg-card); border: 1px solid var(--border);
+            padding: 10px 20px; border-radius: 20px; cursor: pointer;
+            font-size: 14px; font-weight: 600; transition: 0.2s;
+            color: var(--text-secondary);
         }
-        .header h1 { color: white; font-size: 20px; font-weight: bold; }
-        .main-tabs {
-            display: flex;
-            overflow-x: auto;
-            white-space: nowrap;
-            scrollbar-width: thin;
-            border-bottom: 0.5px solid #2c2c2c;
-            background: #000;
-        }
-        .main-tab {
-            padding: 12px 20px;
-            background: none;
-            border: none;
-            color: #aaa;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: 0.2s;
-        }
-        .main-tab.active { color: white; border-bottom-color: #ff0050; }
-        .search-filter-section {
-            background: #111;
-            border-radius: 2rem;
-            padding: 0.75rem 1.5rem;
-            margin: 1rem;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-        .search-box {
-            flex: 2;
-            min-width: 200px;
-            display: flex;
-            align-items: center;
-            background: #2c2c2c;
-            border-radius: 2rem;
-            padding: 0.5rem 1rem;
-        }
-        .search-box i { color: #aaa; margin-left: 0.75rem; font-size: 1.1rem; }
-        .search-box input {
-            background: transparent;
-            border: none;
-            outline: none;
-            font-size: 1rem;
-            width: 100%;
-            font-family: 'Cairo', sans-serif;
-            padding: 0.4rem 0;
-            color: white;
-        }
-        .search-box input::placeholder { color: #777; }
-        .filter-buttons { display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .filter-btn {
-            background: #2c2c2c;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #aaa;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: 0.2s;
-        }
-        .filter-btn.active { background: #ff0050; color: white; }
-        .content-area { padding: 16px; }
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        .explore-card {
-            background: #111;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            transition: 0.2s;
-            border: 1px solid #2c2c2c;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-        .explore-card:hover { transform: translateY(-6px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.3); }
-        .card-img {
-            width: 100%;
-            height: 210px;
-            object-fit: cover;
-            background-color: #2c2c2c;
-        }
-        .card-content { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
-        .card-category {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 0.2rem 0.7rem;
-            border-radius: 20px;
-            background: #2c2c2c;
-            color: #ff0050;
-            width: fit-content;
-            margin-bottom: 0.75rem;
-        }
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 800;
-            margin-bottom: 0.6rem;
-            line-height: 1.4;
-            color: white;
-        }
-        .card-description {
-            color: #aaa;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .card-stats {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: auto;
-            padding-top: 0.8rem;
-            border-top: 1px solid #2c2c2c;
-            font-size: 0.8rem;
-            color: #aaa;
-        }
-        .stats-left, .stats-right { display: flex; gap: 0.8rem; align-items: center; }
-        .like-btn {
-            cursor: pointer;
-            transition: 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-        .like-btn:hover { color: #ff0050; }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-            grid-column: 1 / -1;
-        }
-        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-        .category-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-        .category-btn {
-            background: #2c2c2c;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 30px;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .category-btn:hover, .category-btn.active { background: #ff0050; }
+        .chip:hover { border-color: var(--accent); color: var(--accent); }
+
+        .empty-state { text-align: center; padding: 40px; color: var(--text-muted); }
+
         .bottom-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #fff;
-            display: flex;
-            justify-content: space-around;
-            padding: 8px 0;
-            border-top: 1px solid #ddd;
-            z-index: 30;
+            position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card);
+            display: flex; justify-content: space-around; padding: 8px 0;
+            border-top: 1px solid var(--border); z-index: 100; max-width: 600px; margin: 0 auto;
         }
-        body.dark .bottom-footer { background-color: #111; border-top-color: #2c2c2c; }
         .footer-button {
-            background: none;
-            border: none;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #333;
-            text-decoration: none;
+            background: none; border: none; text-align: center; cursor: pointer;
+            color: var(--text-secondary); text-decoration: none; font-family: 'Cairo', sans-serif;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
         }
-        body.dark .footer-button { color: #aaa; }
-        .footer-button:hover { color: #ff0050; transform: scale(1.05); }
-        .icon { font-size: 22px; display: block; margin-bottom: 4px; }
-        .label { font-size: 11px; color: #333; }
-        body.dark .label { color: #aaa; }
-        #globalToast {
-            position: fixed;
-            bottom: 80px;
-            left: 20px;
-            right: 20px;
-            background: #1f1f1f;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 40px;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.2s;
-            pointer-events: none;
-            font-size: 14px;
-            border-left: 4px solid #fe2c55;
-        }
-        body.light #globalToast { background: #333; }
-        @media (max-width: 768px) {
-            .content-grid { grid-template-columns: 1fr; }
-            .search-filter-section { flex-direction: column; align-items: stretch; }
-        }
+        .footer-button .icon { font-size: 22px; }
+        .footer-button .label { font-size: 11px; font-weight: 600; }
+        .footer-button.create-btn .icon { font-size: 28px; color: var(--accent); }
     </style>
 </head>
 <body>
-<div class="explore-container">
-    <div class="header">
-        <button class="back-btn" onclick="window.location.href='home.html'"><i class="fas fa-arrow-right"></i></button>
-        <h1>استكشاف</h1>
-    </div>
 
-    <div class="main-tabs" id="mainTabs">
-        <button class="main-tab active" data-tab="hot">المواضيع الساخنة</button>
-        <button class="main-tab" data-tab="topicDay">موضوع اليوم</button>
-        <button class="main-tab" data-tab="categories">التصنيفات</button>
-        <button class="main-tab" data-tab="events">مناسبات وأحداث</button>
-    </div>
+<div class="header">
+    <button class="icon-btn" onclick="history.back()"><i class="fas fa-arrow-right"></i></button>
+    <h2>استكشاف</h2>
+    <button class="icon-btn" onclick="window.location.href='search.html'"><i class="fas fa-search"></i></button>
+</div>
 
-    <div class="search-filter-section">
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="ابحث عن منشورات، هاشتاجات، أو مواضيع...">
-        </div>
-        <div class="filter-buttons">
-            <button class="filter-btn active" data-type="all"><i class="fas fa-globe"></i> الكل</button>
-            <button class="filter-btn" data-type="article"><i class="fas fa-newspaper"></i> مقالات</button>
-            <button class="filter-btn" data-type="image"><i class="fas fa-image"></i> صور</button>
-        </div>
-    </div>
+<div class="tabs">
+    <div class="tab active" data-tab="trending">📈 الرائجة</div>
+    <div class="tab" data-tab="users">👤 المستخدمون</div>
+    <div class="tab" data-tab="categories">🏷️ التصنيفات</div>
+</div>
 
-    <div id="exploreContent" class="content-area"></div>
+<div class="content" id="exploreContent">
+    <div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> جاري التحميل...</div>
 </div>
 
 <div class="bottom-footer">
-    <a href="home.html" class="footer-button"><i class="fas fa-home icon"></i><div class="label">الرئيسية</div></a>
-    <a href="explore.html" class="footer-button"><i class="fas fa-compass icon"></i><div class="label">استكشاف</div></a>
-    <a href="create-post.html" class="footer-button"><i class="fas fa-plus-circle icon"></i><div class="label">إنشاء</div></a>
+    <a href="home.html" class="footer-button"><i class="fas fa-home icon"></i><div class="label">الصفحة الرئيسية</div></a>
+    <a href="explore.html" class="footer-button" style="color:var(--accent)"><i class="fas fa-compass icon"></i><div class="label">استكشاف</div></a>
+    <a href="create-post.html" class="footer-button create-btn"><i class="fas fa-plus-circle icon"></i><div class="label">إنشاء</div></a>
     <a href="inbox.html" class="footer-button"><i class="fas fa-inbox icon"></i><div class="label">صندوق الوارد</div></a>
     <a href="profile.html" class="footer-button"><i class="fas fa-user icon"></i><div class="label">الملف الشخصي</div></a>
 </div>
 
-<div id="globalToast"></div>
-
 <script>
-    // ---------------------- Supabase Config ----------------------
-    const SUPABASE_URL = "https://zlkpoghjbqtnhzhmmdbw.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_7evDsA5aEgPMsRBTFjntrg_XZQFmNLw";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let activeTab = 'trending';
 
-    let currentUser = null;
-    let currentTab = 'hot';
-    let searchQuery = '';
-    let contentTypeFilter = 'all';
-    let currentCategory = null;
-    const categoriesList = ["أخبار", "ترفيه", "رياضة", "تعليم", "طبخ", "صناعات", "تجارة", "طبيعة", "تقنية"];
+    // التبويبات
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeTab = tab.dataset.tab;
+            loadContent(activeTab);
+        });
+    });
 
-    // ---------------------- Toast ----------------------
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('globalToast');
-        toast.textContent = msg;
-        toast.style.opacity = '1';
-        toast.style.backgroundColor = isError ? '#3a1e1e' : '#1f1f1f';
-        toast.style.borderLeftColor = isError ? '#ff4444' : '#fe2c55';
-        setTimeout(() => toast.style.opacity = '0', 3000);
-    }
-
-    // ---------------------- تنسيق الأرقام ----------------------
-    function formatNumber(num) {
-        if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-        return num.toString();
-    }
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
-    }
-
-    // ---------------------- جلب المستخدم الحالي ----------------------
-    async function loadCurrentUser() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            const { data: profile } = await supabase.from('users').select('*').eq('id', user.id).single();
-            currentUser = profile || { id: user.id, username: user.email.split('@')[0] };
-        } else {
-            // ضيف: نستخدم أول مستخدم في قاعدة البيانات
-            const { data: guest } = await supabase.from('users').select('*').limit(1).single();
-            currentUser = guest;
-        }
-    }
-
-    // ---------------------- حساب التفاعل ----------------------
-    function getInteractionScore(post) {
-        const likes = post.likes_count || 0;
-        const comments = post.comments_count || 0;
-        const views = post.views_count || 0;
-        const reposts = post.reposts_count || 0;
-        const hoursSince = Math.max(0, (Date.now() - new Date(post.created_at).getTime()) / (1000 * 3600));
-        const engagement = (likes * 2) + (comments * 3) + (views / 50) + (reposts * 4);
-        return engagement / Math.pow(hoursSince + 2, 0.5);
-    }
-
-    // ---------------------- جلب المنشورات (مع التصفية حسب النوع والبحث والتبويب) ----------------------
-    async function fetchPosts() {
-        let query = supabase
-            .from('posts')
-            .select('*, users!posts_author_id_fkey (username, avatar)')
-            .eq('hidden', false);
-
-        // فلتر النوع (article/image)
-        if (contentTypeFilter !== 'all') {
-            query = query.eq('type', contentTypeFilter);
-        }
-        // البحث النصي
-        if (searchQuery.trim()) {
-            query = query.or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%,hashtag.ilike.%${searchQuery}%`);
-        }
-        const { data: posts, error } = await query;
-        if (error) {
-            showToast(error.message, true);
-            return [];
-        }
-        // تحويل البيانات لتتناسب مع التنسيق القديم
-        return posts.map(p => ({
-            ...p,
-            author: p.users?.username || p.author_name,
-            author_avatar: p.users?.avatar,
-            likes: p.likes_count,
-            commentsCount: p.comments_count,
-            views: p.views_count,
-            reposts: p.reposts_count,
-            type: p.type || 'article'
-        }));
-    }
-
-    // ---------------------- الحصول على حالة إعجاب المستخدم ----------------------
-    async function getUserLikes(postIds) {
-        if (!currentUser) return {};
-        const { data, error } = await supabase
-            .from('likes')
-            .select('post_id')
-            .eq('user_id', currentUser.id)
-            .in('post_id', postIds);
-        if (error) return {};
-        const likedSet = new Set(data.map(l => l.post_id));
-        const likesObj = {};
-        postIds.forEach(id => { likesObj[id] = likedSet.has(id); });
-        return likesObj;
-    }
-
-    // ---------------------- عرض النتائج ----------------------
-    async function renderExplore() {
+    // تحميل المحتوى حسب التبويب
+    async function loadContent(tab) {
         const container = document.getElementById('exploreContent');
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i><p>جاري التحميل...</p></div>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> جاري التحميل...</div>';
 
-        let posts = await fetchPosts();
-        const now = new Date();
+        if (tab === 'trending') {
+            // المنشورات الرائجة (الأكثر إعجاباً)
+            const { data: posts, error } = await supabase
+                .from('posts')
+                .select('*, users:author_id (username, avatar)')
+                .eq('hidden', false)
+                .order('likes_count', { ascending: false })
+                .limit(15);
 
-        // تطبيق الفلاتر حسب التبويب
-        if (currentTab === 'hot') {
-            posts = posts.filter(p => (now - new Date(p.created_at)) < 24 * 3600000);
-        } else if (currentTab === 'topicDay') {
-            posts = posts.filter(p => (now - new Date(p.created_at)) < 48 * 3600000);
-        } else if (currentTab === 'categories') {
-            if (currentCategory) {
-                posts = posts.filter(p => p.category === currentCategory);
+            if (error || !posts?.length) {
+                container.innerHTML = '<div class="empty-state">لا توجد منشورات رائجة حالياً</div>';
+                return;
             }
-        } else if (currentTab === 'events') {
-            posts = posts.filter(p => p.event && p.event.trim() !== "");
-        }
 
-        // ترتيب حسب التفاعل للتبويبات الساخنة وموضوع اليوم
-        if (currentTab === 'hot' || currentTab === 'topicDay') {
-            posts.sort((a, b) => getInteractionScore(b) - getInteractionScore(a));
-        }
-
-        if (posts.length === 0) {
-            container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>لا توجد منشورات</p></div>';
-            return;
-        }
-
-        // جلب حالات الإعجاب للمستخدم الحالي
-        const userLikes = await getUserLikes(posts.map(p => p.id));
-
-        // بناء البطاقات
-        let html = '<div class="content-grid">';
-        for (let p of posts) {
-            const liked = userLikes[p.id] || false;
-            const heartClass = liked ? 'fas fa-heart' : 'far fa-heart';
-            const heartColor = liked ? 'color:#ff0050;' : '';
-            const postType = p.type === 'article' ? 'مقال' : 'صورة';
-            const typeIcon = p.type === 'article' ? '<i class="fas fa-pen-fancy"></i>' : '<i class="fas fa-camera"></i>';
-            html += `
-                <div class="explore-card" data-post-id="${p.id}">
-                    <img class="card-img" src="${p.image || 'https://picsum.photos/id/1/400/260'}" alt="${escapeHtml(p.title)}" loading="lazy" onerror="this.src='https://picsum.photos/id/1/400/260'">
-                    <div class="card-content">
-                        <div class="card-category">${typeIcon} ${p.category || 'عام'} • ${postType}</div>
-                        <h3 class="card-title">${escapeHtml(p.title)}</h3>
-                        <p class="card-description">${escapeHtml((p.content || '').substring(0, 120))}...</p>
-                        <div class="card-stats">
-                            <div class="stats-left">
-                                <span><i class="fas fa-user"></i> ${escapeHtml(p.author)}</span>
-                                <span><i class="far fa-calendar-alt"></i> ${new Date(p.created_at).toLocaleDateString('ar')}</span>
-                            </div>
-                            <div class="stats-right">
-                                <span class="like-btn interactive-like" data-id="${p.id}" data-liked="${liked}">
-                                    <i class="${heartClass}" style="${heartColor}"></i> <span class="likes-count">${formatNumber(p.likes)}</span>
-                                </span>
-                                <span><i class="far fa-comment"></i> ${p.commentsCount || 0}</span>
-                                <span><i class="fas fa-eye"></i> ${formatNumber(p.views || 0)}</span>
-                            </div>
+            container.innerHTML = posts.map(p => {
+                const img = parseImages(p.image)[0];
+                return `
+                <div class="post-card" onclick="window.location.href='home.html'">
+                    ${img ? `<img class="post-image" src="${img}" alt="" loading="lazy">` : ''}
+                    <div class="post-content">
+                        <div class="post-title">${escapeHtml(p.title)}</div>
+                        <div class="post-text">${escapeHtml(p.content?.substring(0, 200) || '')}</div>
+                        <div class="post-date">${timeAgo(p.created_at)} • ${p.category || 'عام'}</div>
+                        <div class="post-stats">
+                            <span><i class="far fa-heart"></i> ${formatNumber(p.likes_count || 0)}</span>
+                            <span><i class="far fa-comment"></i> ${formatNumber(p.comments_count || 0)}</span>
+                            <span><i class="far fa-eye"></i> ${formatNumber(p.views_count || 0)}</span>
                         </div>
                     </div>
+                </div>`;
+            }).join('');
+        }
+        else if (tab === 'users') {
+            // مستخدمون مقترحون (غير متابعين)
+            const currentUser = getCurrentUser();
+            let query = supabase.from('users').select('id, username, avatar, verified').limit(15);
+
+            if (currentUser) {
+                const { data: follows } = await supabase
+                    .from('follows')
+                    .select('following_id')
+                    .eq('follower_id', currentUser.id);
+
+                const ids = (follows || []).map(f => f.following_id);
+                ids.push(currentUser.id); // استبعاد المستخدم الحالي أيضاً
+                query = query.not('id', 'in', `(${ids.join(',')})`);
+            }
+
+            const { data: users, error } = await query;
+
+            if (error || !users?.length) {
+                container.innerHTML = '<div class="empty-state">لا يوجد مستخدمون مقترحون حالياً</div>';
+                return;
+            }
+
+            container.innerHTML = users.map(u => `
+                <div class="user-item" onclick="window.location.href='public-profile.html?user=${u.id}'">
+                    <img class="user-avatar" src="${u.avatar || 'https://randomuser.me/api/portraits/lego/5.jpg'}" alt="">
+                    <div class="user-info">
+                        <div class="user-name">
+                            ${u.verified ? '<i class="fas fa-check-circle" style="color:var(--accent-blue);font-size:12px;"></i> ' : ''}
+                            ${escapeHtml(u.username)}
+                        </div>
+                        <div class="user-username">@${escapeHtml(u.username)}</div>
+                    </div>
+                    <i class="fas fa-chevron-left" style="color:var(--text-muted);"></i>
                 </div>
+            `).join('');
+        }
+        else if (tab === 'categories') {
+            // عرض قائمة بالتصنيفات
+            const categories = [
+                'تقنية', 'أدب', 'فن', 'سفر', 'موسيقى', 'رياضة', 'عام',
+                'فلسفة', 'خواطر', 'مغامرات', 'تعليم', 'ترفيه', 'أخبار'
+            ];
+
+            container.innerHTML = `
+                <div class="category-chips">
+                    ${categories.map(c => `
+                        <div class="chip" onclick="window.location.href='search.html?q=${encodeURIComponent(c)}'">
+                            ${c}
+                        </div>
+                    `).join('')}
+                </div>
+                <p style="text-align:center;color:var(--text-muted);margin-top:20px;">
+                    اختر تصنيفاً لاستعراض المنشورات المتعلقة
+                </p>
             `;
         }
-        html += '</div>';
-        container.innerHTML = html;
-        attachLikeEvents();
-        attachCardClickEvents();
     }
 
-    // ---------------------- أحداث الإعجاب ----------------------
-    async function handleLikeClick(event) {
-        event.stopPropagation();
-        if (!currentUser) {
-            showToast('يجب تسجيل الدخول أولاً', true);
-            return;
-        }
-        const btn = event.currentTarget;
-        const postId = parseInt(btn.dataset.id);
-        const currentlyLiked = btn.dataset.liked === 'true';
+    // بدء التحميل
+    loadContent('trending');
 
-        if (!currentlyLiked) {
-            // إضافة إعجاب
-            const { error: insertError } = await supabase
-                .from('likes')
-                .insert({ user_id: currentUser.id, post_id: postId });
-            if (insertError) { showToast(insertError.message, true); return; }
-            await supabase.rpc('increment_likes', { row_id: postId });
-            btn.dataset.liked = 'true';
-            const icon = btn.querySelector('i');
-            icon.className = 'fas fa-heart';
-            icon.style.color = '#ff0050';
-            const countSpan = btn.querySelector('.likes-count');
-            let currentCount = parseInt(countSpan.innerText.replace(/[^0-9]/g, ''));
-            countSpan.innerText = formatNumber(currentCount + 1);
-            showToast('👍 تم الإعجاب');
-        } else {
-            // إلغاء الإعجاب
-            const { error: deleteError } = await supabase
-                .from('likes')
-                .delete()
-                .eq('user_id', currentUser.id)
-                .eq('post_id', postId);
-            if (deleteError) { showToast(deleteError.message, true); return; }
-            await supabase.rpc('decrement_likes', { row_id: postId });
-            btn.dataset.liked = 'false';
-            const icon = btn.querySelector('i');
-            icon.className = 'far fa-heart';
-            icon.style.color = '';
-            const countSpan = btn.querySelector('.likes-count');
-            let currentCount = parseInt(countSpan.innerText.replace(/[^0-9]/g, ''));
-            countSpan.innerText = formatNumber(currentCount - 1);
-            showToast('👎 تم إلغاء الإعجاب');
-        }
-        // تحديث واجهة البطاقة (اختياري)
-    }
+    // تطبيق الثيم
+    const saved = localStorage.getItem('darkMode');
+    if (saved === 'true') document.body.classList.remove('light');
+    else document.body.classList.add('light');
 
-    function attachLikeEvents() {
-        document.querySelectorAll('.interactive-like').forEach(btn => {
-            btn.removeEventListener('click', handleLikeClick);
-            btn.addEventListener('click', handleLikeClick);
-        });
+    // تسجيل Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('✅ Service Worker مسجل:', reg.scope))
+            .catch(err => console.warn('⚠️ فشل تسجيل Service Worker:', err));
     }
-
-    function attachCardClickEvents() {
-        document.querySelectorAll('.explore-card').forEach(card => {
-            card.removeEventListener('click', cardClickHandler);
-            card.addEventListener('click', cardClickHandler);
-        });
-    }
-    function cardClickHandler(e) {
-        if (e.target.closest('.interactive-like')) return;
-        const postId = this.dataset.postId;
-        if (postId) window.location.href = `home.html?post=${postId}`;
-    }
-
-    // ---------------------- البحث والفلترة ----------------------
-    function setupSearchAndFilters() {
-        const searchInput = document.getElementById('searchInput');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        if (searchInput) {
-            searchInput.addEventListener('input', (e) => {
-                searchQuery = e.target.value;
-                renderExplore();
-            });
-        }
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                contentTypeFilter = btn.dataset.type;
-                renderExplore();
-            });
-        });
-    }
-
-    // ---------------------- تبديل التبويبات الرئيسية ----------------------
-    function setTab(tabId) {
-        currentTab = tabId;
-        currentCategory = null;
-        document.querySelectorAll('.main-tab').forEach(tab => {
-            if (tab.dataset.tab === tabId) tab.classList.add('active');
-            else tab.classList.remove('active');
-        });
-        renderExplore();
-    }
-
-    // ---------------------- أحداث التصنيفات ----------------------
-    function handleCategoryClick() {
-        // يتم ربطها بعد رسم أزرار التصنيفات ديناميكياً
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentCategory = btn.dataset.category;
-                renderExplore();
-            });
-        });
-    }
-
-    // ---------------------- الوضع الليلي ----------------------
-    function applyTheme() {
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            document.body.classList.remove('light');
-        } else {
-            document.body.classList.add('light');
-            document.body.classList.remove('dark');
-        }
-    }
-    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
-        localStorage.setItem('darkMode', !document.body.classList.contains('dark'));
-        applyTheme();
-    });
-    applyTheme();
-
-    // ---------------------- بدء التشغيل ----------------------
-    (async () => {
-        await loadCurrentUser();
-        setupSearchAndFilters();
-        // ربط التبويبات الرئيسية
-        document.querySelectorAll('.main-tab').forEach(tab => {
-            tab.addEventListener('click', () => setTab(tab.dataset.tab));
-        });
-        // ربط أزرار التصنيفات (يتم بعد كل تحديث)
-        // سنقوم بإعادة ربطها بعد كل renderExplore
-        // نستخدم MutationObserver بسيط أو نضيف داخل renderExplore
-        setTab('hot');
-    })();
 </script>
 </body>
 </html>
