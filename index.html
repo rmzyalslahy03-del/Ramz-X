@@ -3,10 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Ramz-X | الصفحة الرئيسية</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon/icon-192x192.png">
-    <link rel="apple-touch-icon" href="icon/icon-192x192.png">
+    
+    <!-- SEO الأساسية -->
+    <title>الصفحة الرئيسية | Ramz-X</title>
+    <meta name="description" content="استعرض أحدث المنشورات والأخبار من أصدقائك على Ramz-X. شارك أفكارك وتفاعل مع المجتمع.">
+    <meta name="keywords" content="الصفحة الرئيسية, منشورات, أخبار, تواصل اجتماعي, Ramz-X, رمز إكس, مجتمع عربي">
+    <meta name="author" content="رمزي الصلاحي - Ramz-X">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph (فيسبوك، لينكد إن، واتساب) -->
+    <meta property="og:title" content="الصفحة الرئيسية | Ramz-X">
+    <meta property="og:description" content="استعرض أحدث المنشورات والأخبار من أصدقائك على Ramz-X. منصة تواصل اجتماعي عربية متطورة.">
+    <meta property="og:image" content="https://ramz-x-eight.vercel.app/icons/rx-512.png">
+    <meta property="og:url" content="https://ramz-x-eight.vercel.app/home.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ar_AR">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="الصفحة الرئيسية | Ramz-X">
+    <meta name="twitter:description" content="أحدث المنشورات والأخبار من أصدقائك على Ramz-X.">
+    <meta name="twitter:image" content="https://ramz-x-eight.vercel.app/icons/rx-512.png">
+    
+    <!-- PWA / ثيم المتصفح -->
+    <meta name="theme-color" content="#ff0050">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="R-X">
+    <link rel="apple-touch-icon" href="/icons/rx-192.png">
+    <link rel="manifest" href="/manifest.json">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0-beta3/css/all.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -362,7 +388,7 @@
         });
     }
 
-    // ===================== المشاهدات (تراكمية مع تحديث الواجهة) =====================
+    // ===================== المشاهدات =====================
     let recentViewsSet = new Set();
     let viewThrottleTimer = null;
 
@@ -449,7 +475,8 @@
             </div>`;
         }
         if(append) container.insertAdjacentHTML('beforeend', html); else container.innerHTML = html;
-        attachImageScrollers(); setupViewObserver();
+        attachImageScrollers();
+        setupViewObserver();
     }
 
     async function refreshFeed() {
@@ -469,7 +496,7 @@
     }
     window.onscroll = () => { if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) loadMore(); };
 
-    // ===================== التفاعلات (إعجاب، حفظ، إعادة نشر) =====================
+    // ===================== التفاعلات =====================
     async function toggleLike(postId, btnElement, isDoubleTap = false, event = null) {
         const user = getCurrentUser();
         if (!user) { showToast('يرجى تسجيل الدخول أولاً', true); return; }
@@ -480,11 +507,11 @@
         const icon = btnElement.querySelector('i'), fallback = btnElement.querySelector('.fallback-icon');
         if (!isLiked) {
             btnElement.classList.add('liked'); if (icon) icon.className = 'fas fa-heart'; if (fallback) fallback.style.color = '#ff2a6d'; if (countSpan) countSpan.innerText = formatNumber(current + 1);
-            try { await supabase.from('likes').insert({ user_id: user.id, post_id: postId }); if (isDoubleTap && event) { burstHearts(event.clientX, event.clientY); flashCurrentImage(postId); } showToast('👍 تم الإعجاب'); }
+            try { await supabase.from('likes').insert({ user_id: user.id, post_id: postId }); await incrementLikes(postId); if (isDoubleTap && event) { burstHearts(event.clientX, event.clientY); flashCurrentImage(postId); } showToast('👍 تم الإعجاب'); }
             catch (e) { btnElement.classList.remove('liked'); if (icon) icon.className = 'far fa-heart'; if (fallback) fallback.style.color = ''; if (countSpan) countSpan.innerText = formatNumber(current); showToast('حدث خطأ أثناء الإعجاب', true); }
         } else {
             btnElement.classList.remove('liked'); if (icon) icon.className = 'far fa-heart'; if (fallback) fallback.style.color = ''; if (countSpan) countSpan.innerText = formatNumber(Math.max(0, current - 1));
-            try { await supabase.from('likes').delete().eq('user_id', user.id).eq('post_id', postId); showToast('👎 تم إلغاء الإعجاب'); }
+            try { await supabase.from('likes').delete().eq('user_id', user.id).eq('post_id', postId); await decrementLikes(postId); showToast('👎 تم إلغاء الإعجاب'); }
             catch (e) { btnElement.classList.add('liked'); if (icon) icon.className = 'fas fa-heart'; if (fallback) fallback.style.color = '#ff2a6d'; if (countSpan) countSpan.innerText = formatNumber(current); showToast('حدث خطأ أثناء إلغاء الإعجاب', true); }
         }
     }
@@ -496,11 +523,11 @@
         const icon = btnElement.querySelector('i'), fallback = btnElement.querySelector('.fallback-icon');
         if (!isSaved) {
             btnElement.classList.add('saved'); if (icon) icon.className = 'fas fa-bookmark'; if (fallback) fallback.style.color = '#ffcc44'; if (countSpan) countSpan.innerText = formatNumber(current + 1);
-            try { await supabase.from('favorites').insert({ user_id: user.id, post_id: postId }); showToast('⭐ تم الحفظ'); }
+            try { await supabase.from('favorites').insert({ user_id: user.id, post_id: postId }); await incrementFavorites(postId); showToast('⭐ تم الحفظ'); }
             catch (e) { btnElement.classList.remove('saved'); if (icon) icon.className = 'far fa-bookmark'; if (fallback) fallback.style.color = ''; if (countSpan) countSpan.innerText = formatNumber(current); showToast('خطأ في الحفظ', true); }
         } else {
             btnElement.classList.remove('saved'); if (icon) icon.className = 'far fa-bookmark'; if (fallback) fallback.style.color = ''; if (countSpan) countSpan.innerText = formatNumber(Math.max(0, current - 1));
-            try { await supabase.from('favorites').delete().eq('user_id', user.id).eq('post_id', postId); showToast('تمت الإزالة من المفضلة'); }
+            try { await supabase.from('favorites').delete().eq('user_id', user.id).eq('post_id', postId); await decrementFavorites(postId); showToast('تمت الإزالة من المفضلة'); }
             catch (e) { btnElement.classList.add('saved'); if (icon) icon.className = 'fas fa-bookmark'; if (fallback) fallback.style.color = '#ffcc44'; if (countSpan) countSpan.innerText = formatNumber(current); showToast('خطأ في الإزالة', true); }
         }
     }
@@ -514,12 +541,12 @@
             btnElement.classList.add('reposted'); if (icon) icon.className = 'fas fa-share-square'; if (fallback) fallback.style.color = '#4caf50'; if (countSpan) countSpan.innerText = formatNumber(current + 1);
             try {
                 const { data: original } = await supabase.from('posts').select('*, users!author_id (username)').eq('id', postId).single();
-                if (original) { const authorName = original.users?.username || original.author_name || 'مستخدم'; await supabase.from('posts').insert({ title: original.title, content: `🔄 أعاد ${user.username} نشر منشور ${authorName}\n\n${original.content}`, image: original.image, author_id: user.id, author_name: user.username, hashtag: original.hashtag, category: original.category, created_at: new Date().toISOString() }); }
+                if (original) { const authorName = original.users?.username || original.author_name || 'مستخدم'; await supabase.from('posts').insert({ title: original.title, content: `🔄 أعاد ${user.username} نشر منشور ${authorName}\n\n${original.content}`, image: original.image, author_id: user.id, author_name: user.username, hashtag: original.hashtag, category: original.category, created_at: new Date().toISOString() }); await incrementReposts(postId); }
                 showToast('🔁 تمت إعادة النشر');
             } catch (e) { btnElement.classList.remove('reposted'); if (icon) icon.className = 'far fa-share-square'; if (fallback) fallback.style.color = ''; if (countSpan) countSpan.innerText = formatNumber(current); showToast('خطأ في إعادة النشر', true); }
         } else {
             btnElement.classList.remove('reposted'); if (icon) icon.className = 'far fa-share-square'; if (fallback) fallback.style.color = ''; if (countSpan) countSpan.innerText = formatNumber(Math.max(0, current - 1));
-            try { const { data: reposted } = await supabase.from('posts').select('id').eq('author_id', user.id).like('content', `🔄 أعاد ${user.username} نشر%`).order('created_at', { ascending: false }).limit(1).single(); if (reposted) await supabase.from('posts').delete().eq('id', reposted.id); showToast('↩️ تم إلغاء إعادة النشر'); }
+            try { const { data: reposted } = await supabase.from('posts').select('id').eq('author_id', user.id).like('content', `🔄 أعاد ${user.username} نشر%`).order('created_at', { ascending: false }).limit(1).single(); if (reposted) await supabase.from('posts').delete().eq('id', reposted.id); await decrementReposts(postId); showToast('↩️ تم إلغاء إعادة النشر'); }
             catch (e) { btnElement.classList.add('reposted'); if (icon) icon.className = 'fas fa-share-square'; if (fallback) fallback.style.color = '#4caf50'; if (countSpan) countSpan.innerText = formatNumber(current); showToast('خطأ في إلغاء النشر', true); }
         }
     }
@@ -589,8 +616,8 @@
                 e.stopPropagation(); const commentId = el.dataset.commentId; const user = getCurrentUser();
                 if (!user) { showToast('يجب تسجيل الدخول', true); return; }
                 const isLiked = el.classList.contains('liked'); const countSpan = el.querySelector('.like-count'); let current = parseInt(countSpan.innerText) || 0;
-                if (!isLiked) { el.classList.add('liked'); el.querySelector('i').className = 'fas fa-heart'; countSpan.innerText = current + 1; await supabase.from('comment_likes').insert({ user_id: user.id, comment_id: commentId }); }
-                else { el.classList.remove('liked'); el.querySelector('i').className = 'far fa-heart'; countSpan.innerText = Math.max(0, current - 1); await supabase.from('comment_likes').delete().eq('user_id', user.id).eq('comment_id', commentId); }
+                if (!isLiked) { el.classList.add('liked'); el.querySelector('i').className = 'fas fa-heart'; countSpan.innerText = current + 1; await supabase.from('comment_likes').insert({ user_id: user.id, comment_id: commentId }); await supabase.rpc('increment_comment_likes', { comment_id: commentId }); }
+                else { el.classList.remove('liked'); el.querySelector('i').className = 'far fa-heart'; countSpan.innerText = Math.max(0, current - 1); await supabase.from('comment_likes').delete().eq('user_id', user.id).eq('comment_id', commentId); await supabase.rpc('decrement_comment_likes', { comment_id: commentId }); }
             };
         });
         document.querySelectorAll('.reply-comment').forEach(el => {
@@ -601,7 +628,7 @@
                 inputDiv.innerHTML = `<input type="text" class="reply-input" placeholder="اكتب رداً..."><button class="send-reply-btn">إرسال</button>`;
                 if (replyContainer) replyContainer.appendChild(inputDiv); else { const commentItem = document.getElementById(`comment-${commentId}`); const newReplyContainer = document.createElement('div'); newReplyContainer.className = 'reply-container'; newReplyContainer.id = `replies-${commentId}`; commentItem.appendChild(newReplyContainer); newReplyContainer.appendChild(inputDiv); }
                 const sendBtn = inputDiv.querySelector('.send-reply-btn'), replyInput = inputDiv.querySelector('.reply-input');
-                sendBtn.onclick = async () => { const user = getCurrentUser(); const text = replyInput.value.trim(); if (!text || !user) return; await supabase.from('comments').insert({ post_id: currentCommentPostId, user_id: user.id, text: text, parent_id: commentId }); inputDiv.remove(); loadComments(currentCommentPostId); showToast('تم إضافة الرد'); };
+                sendBtn.onclick = async () => { const user = getCurrentUser(); const text = replyInput.value.trim(); if (!text || !user) return; await supabase.from('comments').insert({ post_id: currentCommentPostId, user_id: user.id, text: text, parent_id: commentId }); await incrementCommentsCount(currentCommentPostId); inputDiv.remove(); loadComments(currentCommentPostId); showToast('تم إضافة الرد'); };
                 replyInput.focus();
             };
         });
@@ -613,7 +640,7 @@
             };
         });
         document.querySelectorAll('.delete-comment').forEach(el => {
-            el.onclick = async (e) => { e.stopPropagation(); const commentId = el.dataset.commentId; if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) { const { data: childComments } = await supabase.from('comments').select('id').eq('parent_id', commentId); if (childComments && childComments.length) await supabase.from('comments').delete().in('id', childComments.map(c => c.id)); await supabase.from('comments').delete().eq('id', commentId); showToast('تم حذف التعليق'); loadComments(currentCommentPostId); } };
+            el.onclick = async (e) => { e.stopPropagation(); const commentId = el.dataset.commentId; if (confirm('هل أنت متأكد من حذف هذا التعليق؟')) { const { data: childComments } = await supabase.from('comments').select('id').eq('parent_id', commentId); if (childComments && childComments.length) await supabase.from('comments').delete().in('id', childComments.map(c => c.id)); await supabase.from('comments').delete().eq('id', commentId); await decrementCommentsCount(currentCommentPostId); showToast('تم حذف التعليق'); loadComments(currentCommentPostId); } };
         });
     }
 
@@ -621,7 +648,7 @@
         const user = getCurrentUser(); const input = document.getElementById('newCommentInput'); const text = input.value.trim();
         if (!text || !currentCommentPostId || !user) return;
         await supabase.from('comments').insert({ post_id: currentCommentPostId, user_id: user.id, text: text });
-        input.value = ''; loadComments(currentCommentPostId); showToast('تم إضافة التعليق');
+        await incrementCommentsCount(currentCommentPostId); input.value = ''; loadComments(currentCommentPostId); showToast('تم إضافة التعليق');
     });
     document.getElementById('closeSheetBtn').addEventListener('click', () => document.getElementById('commentsSheet').classList.remove('open'));
 
@@ -650,7 +677,6 @@
         await checkSession();
         await refreshFeed();
 
-        // تحميل القصص الحقيقية من قاعدة البيانات
         const storiesRow = document.getElementById('storiesRow');
         storiesRow.innerHTML = `
             <div class="story-item story-add" onclick="showToast('📸 افتح الكاميرا لإضافة ستوري')">
@@ -675,38 +701,6 @@
         console.log('✅ Ramz-X جاهز بالكامل - القصص ديناميكية');
     }
     document.addEventListener('DOMContentLoaded', init);
-
-    // تسجيل Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('✅ Service Worker مسجل:', reg.scope))
-            .catch(err => console.warn('⚠️ فشل تسجيل Service Worker:', err));
-    }
-</script>
-
-<!-- ===== نظام الأيقونات الاحتياطية (مضاف في النهاية) ===== -->
-<script>
-(function() {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', checkFontAwesome);
-    } else {
-        checkFontAwesome();
-    }
-    function checkFontAwesome() {
-        var testIcon = document.createElement('i');
-        testIcon.className = 'fas fa-home';
-        testIcon.style.cssText = 'position:absolute;visibility:hidden;';
-        document.body.appendChild(testIcon);
-        var afterFont = window.getComputedStyle(testIcon, ':before').content;
-        document.body.removeChild(testIcon);
-        if (!afterFont || afterFont === 'none' || afterFont === '') {
-            document.body.classList.add('no-fontawesome');
-            console.warn('⚠️ Font Awesome لم يتحمّل، تم تفعيل الأيقونات الاحتياطية');
-        } else {
-            console.log('✅ Font Awesome محمّل بنجاح');
-        }
-    }
-})();
 </script>
 </body>
-</html>
+    </html>
